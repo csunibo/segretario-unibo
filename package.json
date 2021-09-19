@@ -1,0 +1,22 @@
+{
+  "name": "segretario_unibo",
+  "version": "1.0.0",
+  "description": "A Telegram bot to assist other undergraduate Computer Science students at the University of Bologna.",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "telegram",
+    "bot",
+    "university",
+    "students",
+    "assistant"
+  ],
+  "author": "Info_unibo",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.21.1",
+    "express": "^4.17.1",
+    "node-telegram-bot-api": "^0.54.0"
+  }
+}
