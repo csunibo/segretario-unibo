@@ -70,34 +70,69 @@
     "text": "<b>Stickers di Luizo e Betto (2 Anno)</b>\n🎨 <a href='https://t.me/addstickers/UniboShitpost'>Informatica 20/21</a>\n🎨 <a href='https://t.me/addstickers/InfoUniBOCancer'>InfoUnibo</a>\n🎨 <a href='https://t.me/addstickers/Info2k21'>Informatica 2k20/2k21</a>"
   },
   "architettura": {
-    "type": "message",
+    "type": "course",
     "description": "Informazioni sul corso di architettura degli elaboratori",
-    "text": "Le informazioni del corso non sono ancora conosciute. Aspettaa!"
+    "name": "Architettura degli elaboratori",
+    "virtuale": "30691",
+    "teams": "ZTllMjdkODgtNTZhZi00MGFkLTk1MzMtNDVjMjcwZmM2MDc2",
+    "website": "2021/350960",
+    "professors":  [
+        "ivan.lanese"
+    ]
   },
   "logica": {
-    "type": "message",
+    "type": "course",
     "description": "Informazioni sul corso di logica",
-    "text": "Le informazioni del corso non sono ancora conosciute. Aspettaa!"
+    "name": "Logica per l'informatica Modulo 1",
+    "virtuale": "29513",
+    "teams": "NTQ4YzdlZDctNzhhZi00MTgxLWIwODMtYmY2ODFhYTI4YzZi",
+    "website": "2021/455095",
+    "professors": [
+        "claudio.sacerdoticoen"
+    ]
   },
   "programmazione": {
-    "type": "message",
+    "type": "course",
     "description": "Informazioni sul corso di programmazione",
-    "text": "Le informazioni del corso non sono ancora conosciute. Aspettaa!"
+    "name": "programmazione",
+    "virtuale": "26216",
+    "teams": "OTkzMDNlMWQtMjMzMS00YjNmLTliNWYtMjI1OTM2MzJkYWJm",
+    "website": "2021/320574",
+    "professors": ["cosimo.laneve"]
   },
   "algebra": {
     "type": "message",
-    "description": "algebra",
-    "text": "Le informazioni del corso non sono ancora conosciute. Aspettaa!"
+    "description": "Informazioni sul corso di algebra e geometria",
+    "text": "Le informazioni del corso non sono ancora conosciute. Aspettaa!",
+    "name": "algebra e geometria",
+    "virtuale": "",
+    "teams": "",
+    "website": "2021/366975",
+    "professors": ["marta.morigi"]
   },
   "algoritmi": {
     "type": "message",
-    "description": "Le informaizoni del corso sugli algoritmi e strutture di dati",
-    "text": "Le informazioni del corso non sono ancora conosciute. Aspettaa!"
+    "description": "Le informaizioni del corso sugli algoritmi e strutture di dati",
+    "text": "Le informazioni del corso non sono ancora conosciute. Aspettaa!",
+    "name": "Algoritmi e strutture di dati",
+    "virtuale": "",
+    "teams": "",
+    "website": "2021/350957",
+    "professors": [
+        "gianluigi.zavattaro",
+        "pietro.dilena"
+    ]
   },
   "analisi": {
-    "type": "message",
-    "description": "Corso di analisi",
-    "text": "Le informazioni del corso non sono ancora conosciute. Aspettaa!"
+    "type": "course",
+    "description": "Informazioni sul corso di programmazione",
+    "name": "Analisi",
+    "virtuale": "28828",
+    "teams": "MGU3OTRlZDktN2YwMC00MDI2LTk0ODktMjYwMjFlZDdhZmVl",
+    "website": "2021/320573",
+    "professors": [
+        "marco.mughetti",
+        "daniele.morbidelli"
+    ]
   }
 }
-

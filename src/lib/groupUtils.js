@@ -1,6 +1,6 @@
-const groups = require('./json/groups.json');
+const groups = require('@json/groups.json');
 const fs = require('fs');
-const { message, formatter, getChatMember } = require('./utils.js');
+const { message, formatter, getChatMember } = require('@lib/utils.js');
 
 const getGroup = (chatId, senderId) => {
     if (!(chatId in groups)) {
@@ -11,7 +11,7 @@ const getGroup = (chatId, senderId) => {
         group.push(senderId);
     }
 
-    fs.writeFileSync('json/groups.json', JSON.stringify(groups));
+    fs.writeFileSync(groups.filepath, JSON.stringify(groups));
     return group;
 }
 
@@ -34,7 +34,7 @@ const removeFromGroup = (msg, notFoundError) => {
     if (group.length == 0) {
         delete groups[chatId];
     }
-    fs.writeFileSync('json/groups.json', JSON.stringify(groups));
+    fs.writeFileSync(groups.filepath, JSON.stringify(groups));
     return {status: 200}
 }
 
