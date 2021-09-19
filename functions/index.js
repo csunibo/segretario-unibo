@@ -9,7 +9,8 @@ const {
     replyWithTodaylecture,
     message,
     settings,
-    start
+    start,
+    functions
 } = require('@lib/utils.js');
 
 const {
@@ -137,10 +138,12 @@ const onMessage = (msg) => {
     }
 }
 
-function main() {
+async function main(req, res) {
     start(onMessage);
+    res.json({result: `Starting the Bot`});
 }
-main();
+
+exports.start = functions.https.onRequest(main);
 
 
 // Using express so heroku doesn't complain about not using web

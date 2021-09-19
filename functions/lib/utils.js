@@ -1,8 +1,8 @@
 const TelegramBot = require('node-telegram-bot-api');
 const settings = require('@json/settings.json');
+const functions = require('firebase-functions');
 
-const bot = new TelegramBot(process.env.API_KEY, {polling: true});
-console.log(process.env.API_KEY)
+const bot = new TelegramBot(functions.config().app.api_key, {polling: true});
 
 // BUG: non funziona non so perché
 const assert = (value, test, boolean=true) => {
@@ -91,6 +91,7 @@ module.exports = {
     message: message,
     settings: settings,
     start: start,
-    getChatMember: getChatMember
+    getChatMember: getChatMember,
+    functions: functions
 
 }
