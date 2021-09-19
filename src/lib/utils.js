@@ -21,12 +21,14 @@ const message = (msg, text) => {
 	.catch(e => console.error(e));
 }
 
-const getTodayLectures = (res) => {
+const getLectures = (res, isTomorrow) => {
     let now = new Date();
     let todayLectures = [];
+    // SetDate variable is used to get the lessons of tomorrow or today
+    const setDate = isTomorrow ? 1 : 0;
     for (let i = 0; i < res.data.length; ++i) {
         let start = new Date(res.data[i].start);
-        if (start.getFullYear() === now.getFullYear() && start.getMonth() === now.getMonth() && start.getDate() === now.getDate()) {
+        if (start.getFullYear() === now.getFullYear() && start.getMonth() === now.getMonth() && start.getDate() - setDate === now.getDate()) {
             todayLectures.push(res.data[i]);
         }
     }
@@ -55,13 +57,13 @@ const formatter = function () {
     return s;
 }
 
-const replyWithTodaylecture = (msg, todayLectures, fallbackText) => {
+const replyWithLecture = (msg, lectures, fallbackText) => {
     let text = '';
         
-    for (let i = 0; i < todayLectures.length; ++i) {
-        text += '🕘 <b>' + todayLectures[i].title + '</b> ' + todayLectures[i].time + '\n';
+    for (let i = 0; i < lectures.length; ++i) {
+        text += '🕘 <b>' + lectures[i].title + '</b> ' + lectures[i].time + '\n';
     }
-    if (todayLectures.length !== 0) {
+    if (lectures.length !== 0) {
         message(msg, text);
     } else {
         message(msg, fallbackText);
@@ -86,8 +88,8 @@ const getChatMember = (chatId, userId) => {
 
 module.exports = {
     formatter: formatter,
-    getTodayLectures: getTodayLectures,
-    replyWithTodaylecture: replyWithTodaylecture,
+    getLectures: getLectures,
+    replyWithLecture: replyWithLecture,
     message: message,
     settings: settings,
     start: start,

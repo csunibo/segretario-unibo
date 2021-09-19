@@ -27,10 +27,16 @@
     "text": "<b>Gruppi degli anni di corso 2021/22</b>\n\n<a href='https://t.me/joinchat/jTyZ03cqDRliOTY0'>1️⃣ Primo anno</a>\n<a href='https://t.me/informaticaunibo2021'>2️⃣ Secondo anno</a>\n<a href='https://t.me/infounibo2020'>3️⃣ Terzo anno</a>\n\n<b>Gruppi degli insegnamenti</b>\n\n<a href='https://t.me/joinchat/h1lypfBFdEZkYzFk'>👥 Calcolo numerico</a>\n<a href='https://t.me/joinchat/klw79l5tkPM1NWQ0'>👥 Ottimizzazione combinatoria</a>\n<a href='https://t.me/joinchat/4v-08oT6QWk0ZmM8'>👥 Linguaggi di programmazione</a>\n<a href='https://t.me/joinchat/Sw2Ykp0-0mM1Zjdk'>👥 Reti di calcolatori</a>\n<a href='https://t.me/joinchat/2hUcGLfY7Gc2MTA8'>👥 Sistemi operativi</a>\n\n<a href='https://discord.gg/YcAc2rdS3H'><b>📡 Discord</b></a>"
   },
   "lezionidioggi": {
-    "type": "timetable",
-    "description": "Conosci le lezioni di oggi",
+    "type": "todayLesson",
+    "description": "Scopri che lezioni ci sono oggi",
     "url": "https://corsi.unibo.it/laurea/informatica/orario-lezioni/@@orario_reale_json?anno=1",
     "fallbackText": "Non ci sono lezioni oggi. SMETTILA DI PRESSARMI"
+  },
+  "lezionididomani": {
+    "type": "tomorrowLesson",
+    "description": "Scopri che lezioni ci sono domani",
+    "url": "https://corsi.unibo.it/laurea/informatica/orario-lezioni/@@orario_reale_json?anno=1",
+    "fallbackText": "Domani non ci sono lezioni, preparati a fare festa!"
   },
   "libri": {
     "type": "message",

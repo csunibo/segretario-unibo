@@ -5,8 +5,8 @@ const actions = require('@json/actions.json');
 const memes = require('@json/memes.json');
 const { 
     formatter,
-    getTodayLectures,
-    replyWithTodaylecture,
+    getLectures,
+    replyWithLecture,
     message,
     settings,
     start
@@ -24,11 +24,20 @@ if (process.argv.length != 2) {
 }
 process.env.NTBA_FIX_319 = 1;
 
-function TodayLectures(msg, url, fallbackText) {
+function todayLectures(msg, url, fallbackText) {
 	axios.get(url)
 	.then(res => {
-		const todayLectures = getTodayLectures(res);
-		replyWithTodaylecture(msg, todayLectures, fallbackText);
+		const todayLectures = getLectures(res, isTomorrow=false);
+		replyWithLecture(msg, todayLectures, fallbackText);
+	})
+	.catch(e => console.error(e.stack));
+}
+
+function tomorrowLectures(msg, url, fallbackText) {
+	axios.get(url)
+	.then(res => {
+		const tomorrowLectures = getLectures(res, isTomorrow=true);
+		replyWithLecture(msg, tomorrowLectures, fallbackText);
 	})
 	.catch(e => console.error(e.stack));
 }
@@ -109,9 +118,12 @@ const act = (msg, action) => {
 		case 'notLookingFor':
 			notLookingFor(msg, action.text, action.chatError, action.notFoundError);
 			break;
-		case 'timetable':
-			TodayLectures(msg, action.url, action.fallbackText);
+		case 'todayLesson':
+			todayLectures(msg, action.url, action.fallbackText);
 			break;
+        case 'tomorrowLesson':
+            tomorrowLectures(msg, action.url, action.fallbackText);
+            break;
 		case 'help':
 			giveHelp(msg);
 			break;
