@@ -1,4 +1,5 @@
 const TelegramBot = require('node-telegram-bot-api');
+const fs = require('fs');
 const settings = require('@json/settings.json');
 
 const bot = new TelegramBot(process.env.API_KEY, {polling: true});
@@ -14,7 +15,36 @@ const assert = (value, test, boolean=true) => {
     return;
 }
 
+const toggleSleep = (msg) => {
+    const addedGroups = getAddedGroups();
+    addedGroups.sleep = addedGroups.sleep ? false : true;
+    fs.writeFileSync(addedGroups.filepath, JSON.stringify(addedGroups));
+    message(msg, `Messaggi sleep di segretario importati su ${addedGroups.sleep ? "attivati" : "disattivati"}`);
+}
+
+// TODO: should move this on groupUtils ?
+// Important because it changes, so you have to update this again.
+const getAddedGroups = () => {
+    const addedGroups = require("@json/addedGroups.json");
+    return addedGroups;
+}
+
 const message = (msg, text) => {
+    const addedGroups = getAddedGroups();
+    // save the group id.
+    if (!addedGroups.groups.includes(msg.chat.id)) {
+        try {
+			console.log("Adding new group, now groups are");
+			console.log(addedGroups);
+            const groups = addedGroups.groups;
+            groups.push(msg.chat.id);
+            addedGroups.groups = groups;
+            fs.writeFileSync(addedGroups.filepath, JSON.stringify(addedGroups));
+        } catch(e) {
+            console.error(e);
+            console.log("Problem in adding the group to the known ones");
+        }
+    }
     // TODO: write asserts to check or fail if msg, text or settings are undefined
     // this is valid for everyfuncion
 	bot.sendMessage(msg.chat.id, text, settings.messageOptions)
@@ -28,6 +58,7 @@ const getLectures = (res, isTomorrow) => {
     const setDate = isTomorrow ? 1 : 0;
     for (let i = 0; i < res.data.length; ++i) {
         let start = new Date(res.data[i].start);
+	    // TODO: fix date for the first of the year
         if (start.getFullYear() === now.getFullYear() && start.getMonth() === now.getMonth() && start.getDate() - setDate === now.getDate()) {
             todayLectures.push(res.data[i]);
         }
@@ -86,6 +117,13 @@ const getChatMember = (chatId, userId) => {
     });
 }
 
+const getRandomSleepLine = () => {
+    const lines = require("@json/lines.json");
+    const sleepLines = lines.sleep;
+    const randomChoice = Math.floor(Math.random() * sleepLines.length);
+    return sleepLines[randomChoice];
+}
+
 module.exports = {
     formatter: formatter,
     getLectures: getLectures,
@@ -93,6 +131,8 @@ module.exports = {
     message: message,
     settings: settings,
     start: start,
-    getChatMember: getChatMember
-
+    getChatMember: getChatMember,
+    getRandomSleepLine: getRandomSleepLine,
+    getAddedGroups: getAddedGroups,
+    toggleSleep: toggleSleep
 }

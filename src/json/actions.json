@@ -1,13 +1,11 @@
 {
   "start": {
     "type": "message",
-    "description": "Messaggio di benvenuto",
     "text": "Ciao! Stai parlando con Informabot. Assisto gli studenti Unibo della triennale di Informatica immatricolati nell'a.a. 2021/22. Scrivi /help per sapere come si usa"
   },
   "help": {
     "type": "help",
-    "description": "Messaggio di aiuto",
-    "text": "La documentazione è disponibile su <a href='https://github.com/foxyseta/informabot'>GitHub</a>."
+    "description": "Mostra questo messaggio"
   },
   "appunti": {
     "type": "message",
@@ -21,10 +19,10 @@
     "pluralText": "<b>{1}</b> persone cercano gruppi in <b>\"{0}\"</b>:\n",
     "chatError": "Questo comando è riservato alle chat dei gruppi degli insegnamenti."
   },
-  "gruppi": {
+  "link": {
     "type": "message",
-    "description": "Conosci i gruppi attualmente presenti",
-    "text": "<b>Gruppi degli anni di corso 2021/22</b>\n\n<a href='https://t.me/joinchat/jTyZ03cqDRliOTY0'>1️⃣ Primo anno</a>\n<a href='https://t.me/informaticaunibo2021'>2️⃣ Secondo anno</a>\n<a href='https://t.me/infounibo2020'>3️⃣ Terzo anno</a>\n\n<b>Gruppi degli insegnamenti</b>\n\n<a href='https://t.me/joinchat/h1lypfBFdEZkYzFk'>👥 Calcolo numerico</a>\n<a href='https://t.me/joinchat/klw79l5tkPM1NWQ0'>👥 Ottimizzazione combinatoria</a>\n<a href='https://t.me/joinchat/4v-08oT6QWk0ZmM8'>👥 Linguaggi di programmazione</a>\n<a href='https://t.me/joinchat/Sw2Ykp0-0mM1Zjdk'>👥 Reti di calcolatori</a>\n<a href='https://t.me/joinchat/2hUcGLfY7Gc2MTA8'>👥 Sistemi operativi</a>\n\n<a href='https://discord.gg/YcAc2rdS3H'><b>📡 Discord</b></a>"
+    "description": "Link utili al nostro gruppo",
+    "text": "<b>Gruppi degli anni di corso 2021/22</b>\n\n<a href='https://linktr.ee/info_unibo'>Trova tutto nel nostro linktree!</a>\n"
   },
   "lezionidioggi": {
     "type": "todayLesson",
@@ -43,27 +41,12 @@
     "description": "Libri pdf condivisi",
     "text": "<b>Libri, materiali e prove</b>\n📚<a href='https://liveunibo-my.sharepoint.com/:f:/g/personal/gurjyot_wanga_studio_unibo_it/EnTEAPe1X-RHoisCwNfQykQBWGOXHfwEqSdQcOqCWsQFgw?e=SYwCR7'>Primo anno</a>\n📚 <a href='https://liveunibo-my.sharepoint.com/:f:/g/personal/gurjyot_wanga_studio_unibo_it/EkH1O5CfQk9FniJopixNv0YBWWtW-GooDFuSx_9kbgOF1Q?e=RX0Gzx'>Secondo anno</a>"
   },
-  "link": {
-    "type": "alias",
-    "description": "vedi /gruppi",
-    "command": "gruppi"
-  },
-  "materiali": {
-    "type": "alias",
-    "description": "vedi /libri",
-    "command": "libri"
-  },
   "noncercogruppo": {
     "type": "notLookingFor",
     "description": "Non sto più cercando un gruppo",
     "text": "Non sei più nella lista di chi cerca gruppi in \"{0}\".",
     "chatError": "Questo comando è riservato alle chat dei gruppi degli insegnamenti.",
     "notFoundError": "Neanche prima cercavi gruppi in \"{0}\"."
-  },
-  "prove": {
-    "type": "alias",
-    "description": "vedi /libri",
-    "command": "libri"
   },
   "registrate2020": {
     "type": "message",
@@ -74,6 +57,10 @@
     "type": "message",
     "description": "Stickers del 2020",
     "text": "<b>Stickers di Luizo e Betto (2 Anno)</b>\n🎨 <a href='https://t.me/addstickers/UniboShitpost'>Informatica 20/21</a>\n🎨 <a href='https://t.me/addstickers/InfoUniBOCancer'>InfoUnibo</a>\n🎨 <a href='https://t.me/addstickers/Info2k21'>Informatica 2k20/2k21</a>"
+  },
+  "sleep": {
+      "type": "toggleSleep",
+      "description": "enable or disable the sleep Message"
   },
   "architettura": {
     "type": "course",
@@ -100,7 +87,7 @@
   "programmazione": {
     "type": "course",
     "description": "Informazioni sul corso di programmazione",
-    "name": "programmazione",
+    "name": "Programmazione",
     "virtuale": "26216",
     "teams": "OTkzMDNlMWQtMjMzMS00YjNmLTliNWYtMjI1OTM2MzJkYWJm",
     "website": "2021/320574",
@@ -108,9 +95,8 @@
   },
   "algebra": {
     "type": "message",
-    "description": "Informazioni sul corso di algebra e geometria",
     "text": "Le informazioni del corso non sono ancora conosciute. Aspettaa!",
-    "name": "algebra e geometria",
+    "name": "Algebra e geometria",
     "virtuale": "",
     "teams": "",
     "website": "2021/366975",
@@ -118,7 +104,6 @@
   },
   "algoritmi": {
     "type": "message",
-    "description": "Le informaizioni del corso sugli algoritmi e strutture di dati",
     "text": "Le informazioni del corso non sono ancora conosciute. Aspettaa!",
     "name": "Algoritmi e strutture di dati",
     "virtuale": "",
