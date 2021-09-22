@@ -1,7 +1,9 @@
 const groups = require('@json/groups.json');
 const fs = require('fs');
-const { message, formatter, getChatMember } = require('@lib/utils.js');
+const { formatter } = require('@lib/utils.js');
+const { Bot, message } = require("@lib/bot.js")
 
+// REGION PRIVATE
 const getGroup = (chatId, senderId) => {
     if (!(chatId in groups)) {
         groups[chatId] = [];
@@ -42,7 +44,7 @@ const getPromises = (group, chatId) => {
     const length = group.length.toString()
     const promises = Array(length);
     group.forEach((userId, i) => {
-        promises[i] = getChatMember(chatId, userId.toString());
+        promises[i] = Bot.getChatMember(chatId, userId.toString());
     });
 
     return promises;
@@ -68,9 +70,40 @@ const replyAfterPromises = (msg, promises, group) => {
     }
 }
 
+
+
+function add(msg, action) {
+	if (msg.chat.type !== 'group' && msg.chat.type !== 'supergroup') {
+		message(msg, action.chatError);
+        return
+    } 
+    const group = getGroup(msg.chat.id, msg.from.id);
+
+    // design-issue: metto sti field in msg perché è più facile da passere in funzione
+    // ma non so se è una best-practice, forse c'è un design migliore
+    msg.singularText = action.singularText;
+    msg.pluralText = action.pluralText;
+
+    const promises = getPromises(group, msg.chat.id);
+    replyAfterPromises(msg, promises, group);
+}
+
+function remove(msg, action) {
+	if (msg.chat.type !== 'group' && msg.chat.type !== 'supergroup') {
+		message(msg, action.chatError);
+        return;
+    }
+    const response = removeFromGroup(msg, action.notFoundError);
+    if (response.status === 404) {
+        return;
+    }
+    message(msg, formatter(action.text, msg.chat.title));
+    return;
+}
+
 module.exports = {
-    replyAfterPromises: replyAfterPromises,
-    getPromises: getPromises,
-    getGroup: getGroup,
-    removeFromGroup: removeFromGroup
+    Group: {
+		add: add,
+		remove: remove
+	}
 }

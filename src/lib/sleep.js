@@ -1,5 +1,5 @@
 const fs = require('fs');
-const { message: std_message } = require("@lib/utils.js")
+const { message: std_message } = require("@lib/bot.js")
 
 // REGION PRIVATE
 const getSleep = () => {
@@ -50,6 +50,8 @@ const saveCall = (msg, sleeps) => {
         }
     } else {
 		groups[chatId].last_call = new Date().getTime();
+		sleeps.groups = groups;
+		fs.writeFileSync(sleeps.filepath, JSON.stringify(sleeps));
 	}
 
     // TODO: save logs
