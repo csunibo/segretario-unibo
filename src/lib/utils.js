@@ -2,7 +2,6 @@ const TelegramBot = require('node-telegram-bot-api');
 const settings = require('@json/settings.json');
 
 const bot = new TelegramBot(process.env.API_KEY, {polling: true});
-console.log(process.env.API_KEY)
 
 // BUG: non funziona non so perché
 const assert = (value, test, boolean=true) => {
@@ -28,6 +27,7 @@ const getLectures = (res, isTomorrow) => {
     const setDate = isTomorrow ? 1 : 0;
     for (let i = 0; i < res.data.length; ++i) {
         let start = new Date(res.data[i].start);
+	    // TODO: fix date for the first of the year
         if (start.getFullYear() === now.getFullYear() && start.getMonth() === now.getMonth() && start.getDate() - setDate === now.getDate()) {
             todayLectures.push(res.data[i]);
         }
@@ -93,6 +93,5 @@ module.exports = {
     message: message,
     settings: settings,
     start: start,
-    getChatMember: getChatMember
-
+    getChatMember: getChatMember,
 }
