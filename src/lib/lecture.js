@@ -2,16 +2,19 @@ const axios = require('axios');
 const { message } = require("@lib/bot.js")
 
 // REGION PRIVATE
-const reply = (msg, lectures, fallbackText) => {
+const reply = async (msg, lectures, fallbackText) => {
     let text = '';
         
     for (let i = 0; i < lectures.length; ++i) {
         text += '🕘 <b>' + lectures[i].title + '</b> ' + lectures[i].time + '\n';
     }
     if (lectures.length !== 0) {
-        message(msg, text);
+        const msgId = await message(msg, text);
+		// console.log(msgId, "replay");
+		return msgId;
     } else {
         message(msg, fallbackText);
+		return undefined;
     }
 }
 
@@ -41,10 +44,11 @@ const getLectures = (res, isTomorrow) => {
 
 // REGION PUBLIC
 function lectures(msg, url, fallbackText, isTomorrow) {
-	axios.get(url)
+	return axios.get(url)
 	.then(res => {
 		const lectures = getLectures(res, isTomorrow=isTomorrow);
-		reply(msg, lectures, fallbackText);
+		const msgId = reply(msg, lectures, fallbackText);
+		return msgId;
 	})
 	.catch(e => console.error(e.stack));
 }
