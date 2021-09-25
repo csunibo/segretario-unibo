@@ -1,23 +1,81 @@
 import json
 from mongo import getClient
 
-# INCOMPLETO, BISOGNA USARE MONGO ANCHE
+# TODO: create custom class for the responses
+# these responses are repeating themselves too much
 class LookForGroups():
 	def __init__(self):
 		self.mongo = getClient()
 
-	def getGroup(self, chatId, senderId):
-		if chatId not in self.groups:
-			self.groups[chatId] = []
+	def saveToGroup(self, chatId, senderId):
+		is_group = self.mongo.lookgroups.count_documents({"chatId": chatId})
+		if is_group == 0:
+			self.mongo.lookgroups.insert({
+				"chatId": chatId,
+				"senderIds": [senderId]
+			})
 
-		if senderId not in self.groups[chatId]:
-			self.groups[chatId].append(senderId)
+		in_group = self.mongo.lookgroups.count_documents({
+			"chatId": chatId,
+			"senderIds": senderId
+		})
+		if in_group == 0:
+			self.mongo.lookgroups.update(
+				{"chatId": chatId},
+				{"$push": {
+					"senderIds": senderId
+				}})
+		# BUG:This code is checking for documents, not checking for array occurences
+		# change as described https://stackoverflow.com/questions/14319616/how-to-count-occurence-of-each-value-in-array
+		elif in_group > 1:
+			raise Exception(f"Same person with ID {senderId} added multiple times in group {chatId}")
 
-		with open("./json/groups.json", "w") as groups:
-			groups.write(json.dumps(self.groups))
+		return {
+			"status": 200,
+			"remove": False,
+			"chatId": chatId
+		}
 
-	def removeFromGroup(self, msg, notFoundError):
-		chatId = msg.chat.id
-		# senderId = msg.from.id
-		title = msg.chat.title
-		group = self.groups[chatId]
+	def removeFromGroup(self, chatId, senderId):
+
+		in_group = self.mongo.lookgroups.count_documents({
+			"chatId": chatId,
+			"senderIds": senderId
+		})
+		if in_group == 0:
+			return {
+				"status": 404,
+				"chatId": chatId
+			}
+		elif in_group > 1:
+			raise Exception(f"Found duplicate chat with chatId {chatId}")
+
+		self.mongo.lookgroups.update(
+			{"chatId": chatId},
+			{"$pull": {
+				"senderIds": senderId
+			}})
+		
+		return {
+			"status": 200,
+			"remove": True,
+			"chatId": chatId
+		}
+
+	def add(self, msg):
+		if msg.chat.type != "group" and msg.chat.type != "supergroup":
+			return {
+				"status": 403,
+				"chatId": msg.chat.id
+			}
+		
+		return self.saveToGroup(msg.chat.id, msg.from_user.id)
+
+	def remove(self, msg):
+		if msg.chat.type != "group" and msg.chat.type != "supergroup":
+			return {
+				"status": 403,
+				"chatId": msg.chat.id
+			}
+
+		return self.removeFromGroup(msg.chat.id, msg.from_user.id)

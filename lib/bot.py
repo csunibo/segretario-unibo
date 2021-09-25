@@ -4,6 +4,7 @@ import json
 
 from lectures import getCourse, get_lectures
 from mongo import getClient
+from lookForGroups import LookForGroups
 
 class Bot():
 	# REGION INIT
@@ -16,6 +17,7 @@ class Bot():
 		)
 		self.client.add_handler(MessageHandler(self.__onMessage))
 		self.mongo = getClient()
+		self.Group = LookForGroups()
 		
 	def __onMessage(self, client, msg):
 		text = str(msg['text'])
@@ -46,13 +48,16 @@ class Bot():
 		elif type == 'message':
 			self.client.send_message(msg.chat.id, action['text'])
 		elif type == 'lookingFor':
-			Group.add(msg)
+			res = self.Group.add(msg)
+			self.handleResponse(action, res, msg.chat.title)
 		elif type == 'notLookingFor':
-			Group.remove(msg)
+			res = self.Group.remove(msg)
+			self.handleResponse(action, res, msg.chat.title)
 		elif type == "toggleSleep":
 			Sleep.toggle(msg)
 		else:
 			raise TypeError(f"Unknown action type {type}")
+	# ENDREGION
 
 	# REGION GIVE HELP
 	def giveHelp(self, msgId):
@@ -72,6 +77,47 @@ class Bot():
 		answer += "\n<b>I corsi attivi: </b>\n"
 		answer += courses
 		self.client.send_message(msgId, answer)
+	# ENDREGION
+
+	# REGION LOOKING GROUPS
+	def handleResponse(self, action, res, title):
+		if res['status'] == 403:
+			try:
+				self.client.send_message(res['chatId'], action['chatError'])
+			except KeyError:
+				print("Malformed JSON, there is no chatError key in the object")
+			return
+		elif res['status'] == 404:
+			try:
+				print(type(action['notFoundError']))
+				print(action['notFoundError'])
+				self.client.send_message(res['chatId'], action['notFoundError'].format(title))
+			except KeyError:
+				print("Malformed JSON, there is no notFoundError key in the object")
+			return
+
+		if res['remove']:
+			self.client.send_message(res['chatId'], action['text'].format(title))
+		else:
+			title = action['text'].format(title)
+			lookers = self.getChatMember(res['chatId'])
+			self.client.send_message(res['chatId'], title + lookers)
+
+	def getChatMember(self, chatId):
+		# security check first of all :D, just trying to control the flow
+		num_docs = self.mongo.lookgroups.count_documents({"chatId": chatId})
+		if num_docs > 1:
+			raise Exception("Detected two copies of the same chat in the database")
+
+		chat_members = self.mongo.lookgroups.find_one({"chatId": chatId})['senderIds']
+
+		answer = ""
+		for senderId in chat_members:
+			user = self.client.get_chat_member(chatId, senderId)['user']
+			answer += f"\n👤 <a href='tg://user?id={user.id}'>{user.first_name}{' ' + user.last_name if user.last_name else ''}</a>"
+		
+		return answer
+
 	
 
 def main():
