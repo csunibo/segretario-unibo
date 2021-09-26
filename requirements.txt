@@ -1,3 +1,5 @@
 pyrogram
 TgCrypto
 pymongo
+pymongo[srv]
+apscheduler
