@@ -1,9 +1,12 @@
 from pyrogram import Client
 from pyrogram.handlers import MessageHandler
+from pyrogram import filters
+from apscheduler.schedulers.background import BackgroundScheduler
 import json
 
+
 from lectures import getCourse, get_lectures
-from mongo import getClient
+from mongo import getClient, getRemoteClient
 from lookForGroups import LookForGroups
 
 class Bot():
@@ -15,68 +18,61 @@ class Bot():
 		self.client = Client(
 			"segretario_log"
 		)
-		self.client.add_handler(MessageHandler(self.__onMessage))
-		self.mongo = getClient()
+
+		self.scheduler = BackgroundScheduler()
+		self.scheduler.add_job(self.update_every_day, "interval", seconds=10)
+		self.mongo = getRemoteClient()
 		self.Group = LookForGroups()
-		
-	def __onMessage(self, client, msg):
-		text = str(msg['text'])
-		if not text or text[0] != "/":
-			return
 
-		command = text.split(" ")[0]  
-		command = text.split("@")[0][1::]
+		self.actions = list(self.mongo.actions.find({}))
 
-		command_count = self.mongo.actions.count_documents({"command": command})
+		for action in self.actions:
+			self.client.add_handler(MessageHandler(self.__act, filters.command(action["type"])))
 
-		if command_count == 1:
-			command_data = self.mongo.actions.find_one({"command": command})
-			self.__act(msg, command_data)
-		elif command_count > 1:
-			raise Exception("Malformed JSON in MongoDB")
+	def update_every_day(self):
+		self.client.send_message(457951837, "test")
 
-	def __act(self, msg, action):
-		type = action['type']
-		if type == 'course':
-			getCourse(msg.chat.id, action)
-		elif type == 'todayLesson':
-			get_lectures(self.client, msg.chat.id, action, isTomorrow=False)
-		elif type == 'tomorrowLesson':
-			get_lectures(self.client, msg.chat.id, action, isTomorrow=True)
-		elif type == 'help':
-			self.giveHelp(msg.chat.id)
-		elif type == 'message':
-			self.client.send_message(msg.chat.id, action['text'])
-		elif type == 'lookingFor':
-			res = self.Group.add(msg)
-			self.handleResponse(action, res, msg.chat.title)
-		elif type == 'notLookingFor':
-			res = self.Group.remove(msg)
-			self.handleResponse(action, res, msg.chat.title)
-		elif type == "toggleSleep":
-			Sleep.toggle(msg)
+	def __act(self, client, message):
+		_type = message.command[0]
+		if _type == 'course':
+			getCourse(message.chat.id, action)
+		elif _type == 'todayLesson':
+			get_lectures(self.client, message.chat.id, action, isTomorrow=False)
+		elif _type == 'tomorrowLesson':
+			get_lectures(self.client, message.chat.id, action, isTomorrow=True)
+		elif _type == 'help':
+			self.get_help(message)
+		elif _type == 'message':
+			self.client.send_message(message.chat.id, action['text'])
+		elif _type == 'lookingFor':
+			res = self.Group.add(message)
+			self.handleResponse(action, res, message.chat.title)
+		elif _type == 'notLookingFor':
+			res = self.Group.remove(message)
+			self.handleResponse(action, res, message.chat.title)
+		elif _type == "toggleSleep":
+			Sleep.toggle(message)
 		else:
 			raise TypeError(f"Unknown action type {type}")
 	# ENDREGION
 
 	# REGION GIVE HELP
-	def giveHelp(self, msgId):
+	def get_help(self, message):
 		answer = ""
 		courses = ""
-		actions = self.mongo.actions.find({})
-		for command in actions:
+		for command in self.actions:
 			if command['type'] == "course":
 				courses += f"/{command['command']}\n"
 				continue
-
 			try:
 				answer += f"/{command['command']}: {command['description']}\n"
-			except KeyError:
+			except Exception as e:
+				print(e)
 				continue
-
+			#aggiungere le descrizione per togliere il try catch
 		answer += "\n<b>I corsi attivi: </b>\n"
 		answer += courses
-		self.client.send_message(msgId, answer)
+		self.client.send_message(message.chat.id, answer)
 	# ENDREGION
 
 	# REGION LOOKING GROUPS
@@ -117,15 +113,3 @@ class Bot():
 			answer += f"\n👤 <a href='tg://user?id={user.id}'>{user.first_name}{' ' + user.last_name if user.last_name else ''}</a>"
 		
 		return answer
-
-	
-
-def main():
-	"""
-	Test
-	"""
-	app = Client(
-		"segretario_log"
-	)
-
-	app.run()

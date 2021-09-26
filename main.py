@@ -3,7 +3,8 @@ sys.path.append("lib/")
 from bot import Bot
 
 def main():
-	Bot().client.run()
+	bot = Bot()
+	bot.client.run()
 	# client = getClient()
 	# res = client.actions.count_documents({"command": "help"})
 	# print(res)	

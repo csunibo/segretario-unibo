@@ -1,4 +1,4 @@
-# Informabot
+# Informabot 🍕
 
 A Telegram bot to assist other undergraduate Computer Science students at the
 University of Bologna.
@@ -12,7 +12,7 @@ University of Bologna.
 To run the bot from the project directory, simply use
 
 ```bash
-node index.js
+python3 main.py
 ```
 remember to set up API_KEY environment variables.
 
