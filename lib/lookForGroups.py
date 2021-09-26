@@ -7,7 +7,7 @@ class LookForGroups():
 	def __init__(self):
 		self.mongo = getClient()
 
-	def saveToGroup(self, chatId, senderId):
+	def __saveToGroup(self, chatId, senderId):
 		is_group = self.mongo.lookgroups.count_documents({"chatId": chatId})
 		if is_group == 0:
 			self.mongo.lookgroups.insert({
@@ -36,8 +36,7 @@ class LookForGroups():
 			"chatId": chatId
 		}
 
-	def removeFromGroup(self, chatId, senderId):
-
+	def __removeFromGroup(self, chatId, senderId):
 		in_group = self.mongo.lookgroups.count_documents({
 			"chatId": chatId,
 			"senderIds": senderId
@@ -69,7 +68,7 @@ class LookForGroups():
 				"chatId": msg.chat.id
 			}
 		
-		return self.saveToGroup(msg.chat.id, msg.from_user.id)
+		return self.__saveToGroup(msg.chat.id, msg.from_user.id)
 
 	def remove(self, msg):
 		if msg.chat.type != "group" and msg.chat.type != "supergroup":
@@ -78,4 +77,4 @@ class LookForGroups():
 				"chatId": msg.chat.id
 			}
 
-		return self.removeFromGroup(msg.chat.id, msg.from_user.id)
+		return self.__removeFromGroup(msg.chat.id, msg.from_user.id)

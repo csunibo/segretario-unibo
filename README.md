@@ -5,7 +5,14 @@ University of Bologna.
 
 ## Dependencies
 
-[Node.js](https://www.nodejs.dev) is required.
+See requirements.txt
+```
+pyrogram
+TgCrypto
+pymongo
+pymongo[srv]
+apscheduler
+```
 
 ## Running
 

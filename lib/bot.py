@@ -1,6 +1,5 @@
-from pyrogram import Client
+from pyrogram import Client, filters
 from pyrogram.handlers import MessageHandler
-from pyrogram import filters
 from apscheduler.schedulers.background import BackgroundScheduler
 import json
 
@@ -13,11 +12,10 @@ class Bot():
 	# REGION INIT
 	def __init__(self):
 		"""
-		Constructor: gets by default config.ini files on project root
+		Constructor: self.client gets by default config.ini files on project root
+		bot_name is useful to make filters work with the @
 		"""
-		self.client = Client(
-			"segretario_log"
-		)
+		self.client = Client("segretario_log")
 
 		self.scheduler = BackgroundScheduler()
 		self.scheduler.add_job(self.update_every_day, "interval", seconds=10)
@@ -33,6 +31,13 @@ class Bot():
 		self.client.send_message(457951837, "test")
 
 	def __act(self, client, message):
+		"""
+		Funzione che gestisce i messaggi in arrivo.\n
+		In message sono presenti le informazioni del messaggio che hanno passato i filtri.
+		Questo è solamente il nome del comando, il tipo del comando (quello che decide cosa fare qui)
+		è diverso
+		"""
+		print(message)
 		_type = message.command[0]
 		if _type == 'course':
 			getCourse(message.chat.id, action)
@@ -53,23 +58,25 @@ class Bot():
 		elif _type == "toggleSleep":
 			Sleep.toggle(message)
 		else:
-			raise TypeError(f"Unknown action type {type}")
+			raise TypeError(f"Unknown action type {_type}")
 	# ENDREGION
 
 	# REGION GIVE HELP
 	def get_help(self, message):
+		"""
+		Gets message object and answers with current available commands
+		Needs message.chat.id to be present
+		"""
 		answer = ""
 		courses = ""
 		for command in self.actions:
 			if command['type'] == "course":
 				courses += f"/{command['command']}\n"
 				continue
-			try:
-				answer += f"/{command['command']}: {command['description']}\n"
-			except Exception as e:
-				print(e)
-				continue
-			#aggiungere le descrizione per togliere il try catch
+
+			if command['description']['is_present']:
+				answer += f"/{command['command']}: {command['description']['text']}\n"
+
 		answer += "\n<b>I corsi attivi: </b>\n"
 		answer += courses
 		self.client.send_message(message.chat.id, answer)
