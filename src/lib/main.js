@@ -2,7 +2,7 @@ const actions = require('@json/actions.json');
 const memes = require('@json/memes.json');
 
 const { Sleep } = require("@lib/sleep.js");
-const { lectures } = require("@lib/lecture.js");
+const { lectures, weekLectures } = require("@lib/lecture.js");
 const { Bot, message} = require("@lib/bot.js");
 const { Group } = require("@lib/lookForGroups.js")
 
@@ -67,6 +67,12 @@ const act = (msg, action) => {
 			break;
 		case 'tomorrowLesson':
 			lectures(msg, action.url, action.fallbackText, isTomorrow=true);
+			break;
+		case 'thisWeek':
+			weekLectures(msg, action.url, isNext=false);
+			break;
+		case 'nextWeek':
+			weekLectures(msg, action.url, isNext=true);
 			break;
 		case 'help':
 			giveHelp(msg);

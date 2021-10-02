@@ -2,25 +2,52 @@ const axios = require('axios');
 const { message } = require("@lib/bot.js");
 const { DateTime, Interval } = require("luxon");
 
-// REGION PRIVATE
-const createReplyMessage = (lectures) => {
-    let text = '';
-        
-    for (let i = 0; i < lectures.length; ++i) {
-        text += '🕘 <b>' + lectures[i].title + '</b> ' + lectures[i].time + '\n';
-    }
-	return text;
+// README: tutto questo script fa un grandissimo lavoro per filtrare i risultati della call
+// agli API dell'università, sarebbe molto più facile direttamente ricevere il risultato voluto
+// invece che stare a filtrare, fallo visitatore!
+
+
+// REGION PUBLIC
+
+// TODO fai diventare questa funzione un decoratore che wrappa nella risposta di axios
+function lectures(msg, url, fallbackText, isTomorrow) {
+	// Filters the results so that the search space is smaller
+	// Gets the start of the week to the end of the next week
+	const interval = _filterDays();
+	url += `&start=${interval[0]}&end=${interval[1]}`;
+
+	return axios.get(url)
+	.then(res => {
+		const replyMessage = getLectures(res.data, isTomorrow=isTomorrow);
+		const msgId = reply(msg, replyMessage, fallbackText)
+		return msgId;
+	})
+	.catch(e => console.error(e.stack));
 }
 
-const reply = async (msg, msgText, fallbackText) => {
-    if (msgText.length !== 0) {
-        const msgId = await message(msg, msgText);
-		// console.log(msgId, "replay");
+// TODO è praticamente uguale a lectures, da refactorare con decorators
+function weekLectures(msg, url, isNext) {
+	const interval = _filterDays();
+	url += `&start=${interval[0]}&end=${interval[1]}`;
+
+	return axios.get(url)
+	.then(res => {
+		const replyMessage = getWeekLectures(res.data, isNext=isNext);
+		const msgId = reply(msg, replyMessage, fallbackText="Niente lezioni in settimana")
 		return msgId;
-    } else {
-        message(msg, fallbackText);
-		return undefined;
-    }
+	})
+	.catch(e => console.error(e.stack));
+}
+
+// REGION PRIVATE
+
+const _filterDays = (res) => {
+	const now = DateTime.now("");
+	const startOfWeek = now.startOf("week");
+	const endOfNextWeek = startOfWeek.plus({ days: 7 }).endOf("week")
+
+	// to string returns this format '2017-09-14T03:20:34.091-04:00'
+	return [startOfWeek.toString().substring(0, 10), endOfNextWeek.toString().substring(0, 10)];
 }
 
 const getLectures = (data, isTomorrow) => {
@@ -40,6 +67,36 @@ const getLectures = (data, isTomorrow) => {
         return 0;
     });
 	const replyMessage = createReplyMessage(lectures);
+    return replyMessage;
+}
+
+const getWeekLectures = (data, isNext) => {
+	// Getting the inteval to check with n ext 8 lines, should make this a func?
+	const now = DateTime.now("");
+	let startOfWeek = now.startOf("week");
+	let endOfWeek = startOfWeek.endOf("week");
+	if (isNext) {
+		startOfWeek = now.plus({ days: 7 }).startOf("week");
+		endOfWeek = startOfWeek.endOf("week");
+	}
+	const interval = Interval.fromDateTimes(startOfWeek, endOfWeek);
+
+    let lectures = [];
+	data.forEach(lecture => {
+		if (interval.contains(DateTime.fromISO(lecture.start))) {
+            lectures.push(lecture);
+        }
+	})
+    lectures.sort((a, b) => {
+        if (a.start > b.start) {
+            return 1;
+        }
+        if (a.start < b.start) {
+            return -1;
+        }
+        return 0;
+    });
+	const replyMessage = createWeekReplyMessage(lectures, startOfWeek);
     return replyMessage;
 }
 
@@ -72,32 +129,50 @@ const _isWantedDay = (lessonTime, isTomorrow) => {
 	return start.year === now.year && start.month === monthToCheck && start.day === dateToCheck
 }
 
-const _filterDays = (res) => {
-	const now = DateTime.now("");
-	const startOfWeek = now.startOf("week");
-	const endOfNextWeek = startOfWeek.plus({ days: 7 }).endOf("week")
+const createWeekReplyMessage = (lectures, startOfWeek) => {
+	let text = "";
 
-	// to string returns this format '2017-09-14T03:20:34.091-04:00'
-	console.log(startOfWeek.toString().substring(0, 10))
-	return [startOfWeek.toString().substring(0, 10), endOfNextWeek.toString().substring(0, 10)];
+	// 5 giorni sett iniziando da lunedì, hardcoded 5
+	for(let i = 0; i < 5; i++) {
+		let dayLecture = dailyLectures(startOfWeek, lectures);
+		
+		const meseGiornoLezione = startOfWeek.toLocaleString();
+		text += `📅<b> Lezioni del ${meseGiornoLezione} </b> \n`
+		text += createReplyMessage(dayLecture);
+		text += '\n';
+
+		startOfWeek = startOfWeek.plus({days: 1});
+	}
+	return text
 }
 
-// REGION PUBLIC
-function lectures(msg, url, fallbackText, isTomorrow) {
-	// Filters the results so that the search space is smaller
-	// Gets the start of the week to the end of the next week
-	const interval = _filterDays();
-	url += `&start=${interval[0]}&end=${interval[1]}`;
-	
-	return axios.get(url)
-	.then(res => {
-		const replyMessage = getLectures(res.data, isTomorrow=isTomorrow);
-		const msgId = reply(msg, replyMessage, fallbackText)
-		return msgId;
+const dailyLectures = (dayToCheck, lectures) => {
+	let dayLectures = []
+	lectures.forEach(lecture => {
+		if (DateTime.fromISO(lecture.start).day === dayToCheck.day) {
+			dayLectures.push(lecture)
+		}
 	})
-	.catch(e => console.error(e.stack));
+	return dayLectures
+}
+
+const createReplyMessage = (lectures) => {
+    let text = '';
+    for (let i = 0; i < lectures.length; ++i) {
+        text += '🕘 <b>' + lectures[i].title + '</b> ' + lectures[i].time + '\n';
+    }
+	if (lectures.length === 0) {
+		text += "Non ci sono lezioni per questo giorno \n"
+	}
+	return text;
+}
+
+const reply = async (msg, msgText, fallbackText) => {
+	const msgId = await message(msg, msgText);
+	return msgId;
 }
 
 module.exports = {
-	lectures: lectures
+	lectures: lectures,
+	weekLectures: weekLectures
 }

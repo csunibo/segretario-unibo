@@ -121,5 +121,15 @@
         "marco.mughetti",
         "daniele.morbidelli"
     ]
+  },
+  "settimana": {
+	  "type": "thisWeek",
+	  "description": "Conosci tutte le lezioni di questa settimana",
+	  "url": "https://corsi.unibo.it/laurea/informatica/orario-lezioni/@@orario_reale_json?anno=1"
+  },
+  "proxsettimana": {
+	"type": "nextWeek",
+	"description": "Conosci tutte le lezioni della prossima settimana",
+	"url": "https://corsi.unibo.it/laurea/informatica/orario-lezioni/@@orario_reale_json?anno=1"
   }
 }
