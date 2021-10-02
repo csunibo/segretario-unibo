@@ -71,9 +71,6 @@ const act = (msg, action) => {
 		case 'help':
 			giveHelp(msg);
 			break;
-		case "toggleSleep":
-			Sleep.toggle(msg);
-			break;
 		default:
 			console.error(`Unknown action type "${action.type}"`);
 	}
@@ -83,7 +80,8 @@ const onMessage = (msg) => {
 	if (!msg.text || msg.text.toString()[0] != '/') {
 		return;
 	}
-	Sleep.receive(msg);
+	// Useless feature, eliminate it
+	// Sleep.receive(msg);
 
 	const text = msg.text.toString()
 	// '/command@bot param0 ... paramN' -> 'command'

@@ -4,8 +4,8 @@
   "description": "A Telegram bot to assist other undergraduate Computer Science students at the University of Bologna.",
   "scripts": {
     "start": "node ./src/index.js",
-	"daily": "node ./src/daily.js",
-	"maintenance": "node ./src/maintenance.js",
+    "daily": "node ./src/daily.js",
+    "maintenance": "node ./src/maintenance.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -20,11 +20,12 @@
   "dependencies": {
     "axios": "^0.21.1",
     "express": "^4.17.1",
+    "luxon": "^2.0.2",
     "module-alias": "^2.2.2",
     "node-telegram-bot-api": "^0.54.0"
   },
   "_moduleAliases": {
     "@json": "src/json",
     "@lib": "src/lib"
-   }
+  }
 }

@@ -107,3 +107,9 @@ dist
 # Informabot
 
 json/groups.json
+
+# Anche per versione python
+config.ini
+segretario/
+*.session
+__pycache__
