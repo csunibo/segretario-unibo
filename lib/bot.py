@@ -2,10 +2,10 @@ from pyrogram import Client
 from pyrogram.handlers import MessageHandler
 from pyrogram import filters
 from apscheduler.schedulers.background import BackgroundScheduler
-import json
 
 
 from lectures import getCourse, get_lectures
+from message import Message
 from mongo import getClient, getRemoteClient
 from lookForGroups import LookForGroups
 
@@ -15,46 +15,54 @@ class Bot():
 		"""
 		Constructor: gets by default config.ini files on project root
 		"""
-		self.client = Client(
-			"segretario_log"
-		)
+		self.client = Client("segretario_log")
 
 		self.scheduler = BackgroundScheduler()
 		self.scheduler.add_job(self.update_every_day, "interval", seconds=10)
-		self.mongo = getRemoteClient()
+		self.mongo = getClient()
 		self.Group = LookForGroups()
 
 		self.actions = list(self.mongo.actions.find({}))
 
 		for action in self.actions:
-			self.client.add_handler(MessageHandler(self.__act, filters.command(action["type"])))
+			self.client.add_handler(MessageHandler(self.__act, filters.command(action["command"])))
 
 	def update_every_day(self):
-		self.client.send_message(457951837, "test")
+		self.client.send_message(0, "test")
 
 	def __act(self, client, message):
-		_type = message.command[0]
+		commandName = message.command[0]
+		action = self.mongo.actions.find_one({"command": commandName})
+		_type = action["type"]
 		if _type == 'course':
-			getCourse(message.chat.id, action)
+			res = getCourse(message.chat.id, action)
+			self.send_message(res)
 		elif _type == 'todayLesson':
-			get_lectures(self.client, message.chat.id, action, isTomorrow=False)
+			res = get_lectures(message.chat.id, action['dati'], isTomorrow=False)
+			self.send_message(res)
 		elif _type == 'tomorrowLesson':
-			get_lectures(self.client, message.chat.id, action, isTomorrow=True)
+			res = get_lectures(message.chat.id, action['dati'], isTomorrow=True)
+			self.send_message(res)
 		elif _type == 'help':
 			self.get_help(message)
 		elif _type == 'message':
-			self.client.send_message(message.chat.id, action['text'])
+			messageClass = Message(message.chat.id, action['dati']['text'])
+			self.send_message(messageClass)
 		elif _type == 'lookingFor':
-			res = self.Group.add(message)
-			self.handleResponse(action, res, message.chat.title)
+			messageClass = Message(chatId=message.chat.id, text="", senderIds=message.from_user.id, title=message.chat.title, chatType=message.chat.type)
+			res = self.Group.add(messageClass)
+			msg = self.getChatMember(res)
+			self.send_message(msg)
 		elif _type == 'notLookingFor':
-			res = self.Group.remove(message)
-			self.handleResponse(action, res, message.chat.title)
-		elif _type == "toggleSleep":
-			Sleep.toggle(message)
+			messageClass = Message(chatId=message.chat.id, text="", senderIds=message.from_user.id, title=message.chat.title, chatType=message.chat.type)
+			res = self.Group.remove(messageClass)
+			self.send_message(res)
 		else:
-			raise TypeError(f"Unknown action type {type}")
+			raise TypeError(f"Unknown action type {_type}")
 	# ENDREGION
+
+	def send_message(self, messageClass: Message):
+		self.client.send_message(messageClass.chatId, text=messageClass.text)
 
 	# REGION GIVE HELP
 	def get_help(self, message):
@@ -64,52 +72,32 @@ class Bot():
 			if command['type'] == "course":
 				courses += f"/{command['command']}\n"
 				continue
-			try:
-				answer += f"/{command['command']}: {command['description']}\n"
-			except Exception as e:
-				print(e)
+			
+			if (command['description']['is_present'] == False):
 				continue
-			#aggiungere le descrizione per togliere il try catch
+
+			answer += f"/{command['command']}: {command['description']['text']}\n"
+
 		answer += "\n<b>I corsi attivi: </b>\n"
 		answer += courses
-		self.client.send_message(message.chat.id, answer)
+		messageStruct = Message(message.chat.id, answer)
+		self.send_message(messageStruct)
 	# ENDREGION
 
 	# REGION LOOKING GROUPS
-	def handleResponse(self, action, res, title):
-		if res['status'] == 403:
-			try:
-				self.client.send_message(res['chatId'], action['chatError'])
-			except KeyError:
-				print("Malformed JSON, there is no chatError key in the object")
-			return
-		elif res['status'] == 404:
-			try:
-				print(type(action['notFoundError']))
-				print(action['notFoundError'])
-				self.client.send_message(res['chatId'], action['notFoundError'].format(title))
-			except KeyError:
-				print("Malformed JSON, there is no notFoundError key in the object")
-			return
-
-		if res['remove']:
-			self.client.send_message(res['chatId'], action['text'].format(title))
-		else:
-			title = action['text'].format(title)
-			lookers = self.getChatMember(res['chatId'])
-			self.client.send_message(res['chatId'], title + lookers)
-
-	def getChatMember(self, chatId):
+	def getChatMember(self, message: Message) -> Message:
+		# TODO: the checks should be on the database, not here
 		# security check first of all :D, just trying to control the flow
-		num_docs = self.mongo.lookgroups.count_documents({"chatId": chatId})
+		num_docs = self.mongo.lookgroups.count_documents({"chatId": message.chatId})
 		if num_docs > 1:
 			raise Exception("Detected two copies of the same chat in the database")
 
-		chat_members = self.mongo.lookgroups.find_one({"chatId": chatId})['senderIds']
+		chat_members = self.mongo.lookgroups.find_one({"chatId": message.chatId})['senderIds']
 
 		answer = ""
 		for senderId in chat_members:
-			user = self.client.get_chat_member(chatId, senderId)['user']
+			user = self.client.get_chat_member(message.chatId, senderId)['user']
 			answer += f"\n👤 <a href='tg://user?id={user.id}'>{user.first_name}{' ' + user.last_name if user.last_name else ''}</a>"
 		
-		return answer
+		message.text += answer
+		return message
