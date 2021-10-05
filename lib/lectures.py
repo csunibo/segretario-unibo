@@ -4,18 +4,18 @@ from datetime import date, datetime
 import json
 from message import Message
 
-def get_lectures(msgId: int, data: object, isTomorrow: bool = False) -> Message:
+def get_lectures(msg: Message, data: object, isTomorrow: bool = False) -> Message:
 	"""
 	Receives msg dict, gets the lectures and answers back, you have to change
 	other params to make it as you like
 	"""
 	if not data['url'] or not data['fallbackText']:
-		return Message(msgId, "Ho problemi a trovare le lezioni, devo essere sistemato!", status=500)
+		return Message(msg, text="Ho problemi a trovare le lezioni, devo essere sistemato!", status=500)
 
 	response = requests.get(data["url"]).text
 	response = json.loads(response)
 	lectures = _formatLectures(response, isTomorrow)
-	res = _reply(msgId, lectures, data['fallbackText'])
+	res = _reply(msg, lectures, data['fallbackText'])
 	return res
 
 
@@ -49,25 +49,24 @@ def _getDateCheck(lesson_time, isTomorrow):
 	return date_to_check
 
 
-def _reply(msgId, lectures, fallbackText) -> Message:
+def _reply(msg, lectures, fallbackText) -> Message:
 	if len(lectures) == 0:
-		return Message(msgId, fallbackText)
+		return Message(msg, text=fallbackText)
 
 	ans = ''
 
 	for lecture in lectures:
 		ans += f"🕘 <b> {lecture['title']} </b>  {lecture['time']} \n"
+	return Message(msg, text=ans)
 
-	return Message(msgId, ans)
 
-
-def getCourse(msgId, courseInfo) -> Message:
+def getCourse(msg, courseInfo) -> Message:
 		# Non inviare link malformati, controlla prima il json
 		if not courseInfo["professors"] or not courseInfo["virtuale"] or not courseInfo["teams"] or not courseInfo["website"]:
-			return Message(msgId, "Non riesco a ritrovare il corso!", status=404)
+			return Message(msg.chat.id, "Non riesco a ritrovare il corso!", status=404)
 
 		emails = '@unibo.it\n  '.join(courseInfo["professors"]) + '@unibo.it'
-		return Message(msgId, f"""<b>{courseInfo["name"]}</b>
+		return Message(msg.chat.id, f"""<b>{courseInfo["name"]}</b>
 			<a href='https://virtuale.unibo.it/course/view.php?id={courseInfo["virtuale"]}'>Virtuale</a>
 			<a href='https://teams.microsoft.com/l/meetup-join/19%3ameeting_{courseInfo["teams"]}%40thread.v2/0?context=%7b%22Tid%22%3a%22e99647dc-1b08-454a-bf8c-699181b389ab%22%2c%22Oid%22%3a%22080683d2-51aa-4842-aa73-291a43203f71%22%7d'>Videolezione</a>
 			<a href='https://www.unibo.it/it/didattica/insegnamenti/insegnamento/{courseInfo["website"]}'>Sito</a>

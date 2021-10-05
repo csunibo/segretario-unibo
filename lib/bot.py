@@ -23,9 +23,11 @@ class Bot():
 		self.Group = LookForGroups()
 
 		self.actions = list(self.mongo.actions.find({}))
-
+		command_filters = []
 		for action in self.actions:
-			self.client.add_handler(MessageHandler(self.__act, filters.command(action["command"])))
+			command_filters.append(action["command"])
+
+		self.client.add_handler(MessageHandler(self.__act, filters.command(command_filters)))
 
 	def update_every_day(self):
 		self.client.send_message(0, "test")
@@ -35,26 +37,26 @@ class Bot():
 		action = self.mongo.actions.find_one({"command": commandName})
 		_type = action["type"]
 		if _type == 'course':
-			res = getCourse(message.chat.id, action)
+			res = getCourse(message, action)
 			self.send_message(res)
 		elif _type == 'todayLesson':
-			res = get_lectures(message.chat.id, action['dati'], isTomorrow=False)
+			res = get_lectures(message, action['dati'], isTomorrow=False)
 			self.send_message(res)
 		elif _type == 'tomorrowLesson':
-			res = get_lectures(message.chat.id, action['dati'], isTomorrow=True)
+			res = get_lectures(message, action['dati'], isTomorrow=True)
 			self.send_message(res)
 		elif _type == 'help':
 			self.get_help(message)
 		elif _type == 'message':
-			messageClass = Message(message.chat.id, action['dati']['text'])
+			messageClass = Message(message, text=action['dati']['text'])
 			self.send_message(messageClass)
 		elif _type == 'lookingFor':
-			messageClass = Message(chatId=message.chat.id, text="", senderIds=message.from_user.id, title=message.chat.title, chatType=message.chat.type)
+			messageClass = Message(message)
 			res = self.Group.add(messageClass)
 			msg = self.getChatMember(res)
 			self.send_message(msg)
 		elif _type == 'notLookingFor':
-			messageClass = Message(chatId=message.chat.id, text="", senderIds=message.from_user.id, title=message.chat.title, chatType=message.chat.type)
+			messageClass = Message(message)
 			res = self.Group.remove(messageClass)
 			self.send_message(res)
 		else:
@@ -62,7 +64,7 @@ class Bot():
 	# ENDREGION
 
 	def send_message(self, messageClass: Message):
-		self.client.send_message(messageClass.chatId, text=messageClass.text)
+		self.client.send_message(messageClass.chat.id, text=messageClass.text)
 
 	# REGION GIVE HELP
 	def get_help(self, message):
@@ -80,7 +82,8 @@ class Bot():
 
 		answer += "\n<b>I corsi attivi: </b>\n"
 		answer += courses
-		messageStruct = Message(message.chat.id, answer)
+		messageStruct = Message(message, text=answer)
+		print(messageStruct)
 		self.send_message(messageStruct)
 	# ENDREGION
 
@@ -88,15 +91,15 @@ class Bot():
 	def getChatMember(self, message: Message) -> Message:
 		# TODO: the checks should be on the database, not here
 		# security check first of all :D, just trying to control the flow
-		num_docs = self.mongo.lookgroups.count_documents({"chatId": message.chatId})
+		num_docs = self.mongo.lookgroups.count_documents({"chatId": message.chat.id})
 		if num_docs > 1:
 			raise Exception("Detected two copies of the same chat in the database")
 
-		chat_members = self.mongo.lookgroups.find_one({"chatId": message.chatId})['senderIds']
+		chat_members = self.mongo.lookgroups.find_one({"chatId": message.chat.id})['senderIds']
 
 		answer = ""
 		for senderId in chat_members:
-			user = self.client.get_chat_member(message.chatId, senderId)['user']
+			user = self.client.get_chat_member(message.chat.id, senderId)['user']
 			answer += f"\n👤 <a href='tg://user?id={user.id}'>{user.first_name}{' ' + user.last_name if user.last_name else ''}</a>"
 		
 		message.text += answer
