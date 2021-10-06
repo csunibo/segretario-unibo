@@ -3,3 +3,6 @@ TgCrypto
 pymongo
 pymongo[srv]
 apscheduler
+
+# For tests:
+freezegun

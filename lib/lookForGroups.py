@@ -1,5 +1,6 @@
-import json
+from pyrogram.types import messages_and_media
 from mongo import getClient
+from message import Message
 
 # TODO: create custom class for the responses
 # these responses are repeating themselves too much
@@ -7,75 +8,71 @@ class LookForGroups():
 	def __init__(self):
 		self.mongo = getClient()
 
-	def saveToGroup(self, chatId, senderId):
-		is_group = self.mongo.lookgroups.count_documents({"chatId": chatId})
+	def saveToGroup(self, message: Message):
+
+		is_group = self.mongo.lookgroups.count_documents({"chatId": message.chat.id})
 		if is_group == 0:
-			self.mongo.lookgroups.insert({
-				"chatId": chatId,
-				"senderIds": [senderId]
+			self.mongo.lookgroups.insert_one({
+				"chatId": message.chat.id,
+				"senderIds": [message.from_user.id]
 			})
 
 		in_group = self.mongo.lookgroups.count_documents({
-			"chatId": chatId,
-			"senderIds": senderId
+			"chatId": message.chat.id,
+			"senderIds": message.from_user.id
 		})
 		if in_group == 0:
-			self.mongo.lookgroups.update(
-				{"chatId": chatId},
+			self.mongo.lookgroups.update_one(
+				{"chatId": message.chat.id},
 				{"$push": {
-					"senderIds": senderId
+					"senderIds": message.from_user.id
 				}})
+
+		# TODO: should not validate from here but should add validators in the database!
 		# BUG:This code is checking for documents, not checking for array occurences
 		# change as described https://stackoverflow.com/questions/14319616/how-to-count-occurence-of-each-value-in-array
 		elif in_group > 1:
-			raise Exception(f"Same person with ID {senderId} added multiple times in group {chatId}")
+			raise Exception(f"Same person with ID {message.from_user.id} added multiple times in group {message.chat.id}")
+		
+		message.text = "Questi utenti cercano gruppo in {0}"
+		message.text = message.text.format(message.chat.title)
+		return message
 
-		return {
-			"status": 200,
-			"remove": False,
-			"chatId": chatId
-		}
-
-	def removeFromGroup(self, chatId, senderId):
-
+	def removeFromGroup(self, message: Message):
 		in_group = self.mongo.lookgroups.count_documents({
-			"chatId": chatId,
-			"senderIds": senderId
+			"chatId": message.chat.id,
+			"senderIds": message.from_user.id
 		})
+		
 		if in_group == 0:
-			return {
-				"status": 404,
-				"chatId": chatId
-			}
+			message.status = 404
+			message.text = "Utente non trovato nella chat <b>{0}</b>"
+			message.text = message.text.format(message.chat.title)
+			return message 
 		elif in_group > 1:
-			raise Exception(f"Found duplicate chat with chatId {chatId}")
+			raise Exception(f"Found duplicate chat with chatId {message.chat.id}")
 
-		self.mongo.lookgroups.update(
-			{"chatId": chatId},
+		self.mongo.lookgroups.update_one(
+			{"chatId": message.chat.id},
 			{"$pull": {
-				"senderIds": senderId
+				"senderIds": message.from_user.id
 			}})
 		
-		return {
-			"status": 200,
-			"remove": True,
-			"chatId": chatId
-		}
+		message.text = "Utente rimosso con Successo!"
+		return message
 
-	def add(self, msg):
+	def add(self, msg: Message):
 		if msg.chat.type != "group" and msg.chat.type != "supergroup":
-			return {
-				"status": 403,
-				"chatId": msg.chat.id
-			}
+			msg.status = 403
+			msg.text = "Questa funzionalità deve essere usata nei gruppi non nelle chat private!"
+			return msg
 		
-		return self.saveToGroup(msg.chat.id, msg.from_user.id)
+		return self.saveToGroup(msg)
 
-	def remove(self, msg):
+	def remove(self, msg: Message):
 		if msg.chat.type != "group" and msg.chat.type != "supergroup":
-			return {
-				"status": 403,
-				"chatId": msg.chat.id
-			}
+			msg.status = 403
+			msg.text = "Questa funzionalità deve essere usata nei gruppi non nelle chat private!"
+			return msg
 
-		return self.removeFromGroup(msg.chat.id, msg.from_user.id)
+		return self.removeFromGroup(msg)
