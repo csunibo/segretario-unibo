@@ -33,6 +33,8 @@ class Bot():
 		self.client.send_message(0, "test")
 
 	def __act(self, client, message):
+		# TODO: questo switch è diventato troppo lungo, bisogna refactorare
+		# dividendolo in passi molto più semplici
 		commandName = message.command[0]
 		action = self.mongo.actions.find_one({"command": commandName})
 		_type = action["type"]
@@ -40,24 +42,28 @@ class Bot():
 			res = getCourse(message, action)
 			self.send_message(res)
 		elif _type == 'todayLesson':
-			res = get_lectures(message, action['dati'], isTomorrow=False)
+			action['dati']['isTomorrow'] = False
+			msg = Message(message, data=action['dati'])
+			res = get_lectures(msg)
 			self.send_message(res)
 		elif _type == 'tomorrowLesson':
-			res = get_lectures(message, action['dati'], isTomorrow=True)
+			action['dati']['isTomorrow'] = True
+			msg = Message(message, data=action['dati'])
+			res = get_lectures(msg)
 			self.send_message(res)
 		elif _type == 'help':
 			self.get_help(message)
 		elif _type == 'message':
-			messageClass = Message(message, text=action['dati']['text'])
-			self.send_message(messageClass)
+			msg = Message(message, text=action['dati']['text'])
+			self.send_message(msg)
 		elif _type == 'lookingFor':
-			messageClass = Message(message)
-			res = self.Group.add(messageClass)
+			msg = Message(message)
+			res = self.Group.add(msg)
 			msg = self.getChatMember(res)
 			self.send_message(msg)
 		elif _type == 'notLookingFor':
-			messageClass = Message(message)
-			res = self.Group.remove(messageClass)
+			msg = Message(message)
+			res = self.Group.remove(msg)
 			self.send_message(res)
 		else:
 			raise TypeError(f"Unknown action type {_type}")

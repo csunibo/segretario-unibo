@@ -12,7 +12,7 @@ class LookForGroups():
 
 		is_group = self.mongo.lookgroups.count_documents({"chatId": message.chat.id})
 		if is_group == 0:
-			self.mongo.lookgroups.insert({
+			self.mongo.lookgroups.insert_one({
 				"chatId": message.chat.id,
 				"senderIds": [message.from_user.id]
 			})
@@ -22,7 +22,7 @@ class LookForGroups():
 			"senderIds": message.from_user.id
 		})
 		if in_group == 0:
-			self.mongo.lookgroups.update(
+			self.mongo.lookgroups.update_one(
 				{"chatId": message.chat.id},
 				{"$push": {
 					"senderIds": message.from_user.id
@@ -52,7 +52,7 @@ class LookForGroups():
 		elif in_group > 1:
 			raise Exception(f"Found duplicate chat with chatId {message.chat.id}")
 
-		self.mongo.lookgroups.update(
+		self.mongo.lookgroups.update_one(
 			{"chatId": message.chat.id},
 			{"$pull": {
 				"senderIds": message.from_user.id

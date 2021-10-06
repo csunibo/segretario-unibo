@@ -1,6 +1,5 @@
 from pyrogram.types import Message as PyrogramMessage
 
-# TODO: add data section to store data and communicate with other processes
 class Message(PyrogramMessage):
 	"""
 	COSA SERVE QUESTA CLASSE
@@ -11,15 +10,16 @@ class Message(PyrogramMessage):
 		self, 
 		pyrogramMessage, 
 		text=None, 
-		status=None
+		status=None,
+		data=None
 	) -> None:
 
 		super().__init__(
 			message_id=pyrogramMessage.message_id + 1, 
 			chat=pyrogramMessage.chat, 
 			from_user=pyrogramMessage.from_user, 
-			text=text,
-			status=status
+			text=text
 		)
 
+		self.data = data
 		self.status = status
