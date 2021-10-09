@@ -1,21 +1,18 @@
-from pyrogram.types import messages_and_media
-from mongo import getClient
+from mongo import getContainerClient
 from message import Message
 
-# TODO: create custom class for the responses
-# these responses are repeating themselves too much
 class LookForGroups():
 	def __init__(self):
-		self.mongo = getClient()
+		self.mongo = getContainerClient()
 
 	def saveToGroup(self, message: Message):
-
 		is_group = self.mongo.lookgroups.count_documents({"chatId": message.chat.id})
 		if is_group == 0:
-			self.mongo.lookgroups.insert_one({
+			res = self.mongo.lookgroups.insert_one({
 				"chatId": message.chat.id,
 				"senderIds": [message.from_user.id]
 			})
+			print(res)
 
 		in_group = self.mongo.lookgroups.count_documents({
 			"chatId": message.chat.id,
@@ -66,7 +63,7 @@ class LookForGroups():
 			msg.status = 403
 			msg.text = "Questa funzionalità deve essere usata nei gruppi non nelle chat private!"
 			return msg
-		
+
 		return self.saveToGroup(msg)
 
 	def remove(self, msg: Message):

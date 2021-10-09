@@ -6,7 +6,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 from lectures import getCourse, get_lectures
 from message import Message
-from mongo import getClient, getRemoteClient
+from mongo import getContainerClient
 from lookForGroups import LookForGroups
 
 class Bot():
@@ -19,13 +19,18 @@ class Bot():
 
 		self.scheduler = BackgroundScheduler()
 		self.scheduler.add_job(self.update_every_day, "interval", seconds=10)
-		self.mongo = getClient()
+		self.mongo = getContainerClient()
 		self.Group = LookForGroups()
 
 		self.actions = list(self.mongo.actions.find({}))
+
+		names = ["flecart_test_bot", "SegretarioUnibo_bot"]
+
 		command_filters = []
 		for action in self.actions:
 			command_filters.append(action["command"])
+			command_filters.append(action["command"] + "@" + names[0])
+			command_filters.append(action["command"] + "@" + names[0])
 
 		self.client.add_handler(MessageHandler(self.__act, filters.command(command_filters)))
 
@@ -36,10 +41,14 @@ class Bot():
 		# TODO: questo switch è diventato troppo lungo, bisogna refactorare
 		# dividendolo in passi molto più semplici
 		commandName = message.command[0]
+		if "@" in commandName:
+			commandName = commandName.split("@")[0]
+			
 		action = self.mongo.actions.find_one({"command": commandName})
 		_type = action["type"]
 		if _type == 'course':
-			res = getCourse(message, action)
+			msg = Message(message, data=action['dati'])
+			res = getCourse(msg)
 			self.send_message(res)
 		elif _type == 'todayLesson':
 			action['dati']['isTomorrow'] = False
@@ -89,7 +98,6 @@ class Bot():
 		answer += "\n<b>I corsi attivi: </b>\n"
 		answer += courses
 		messageStruct = Message(message, text=answer)
-		print(messageStruct)
 		self.send_message(messageStruct)
 	# ENDREGION
 
@@ -97,11 +105,16 @@ class Bot():
 	def getChatMember(self, message: Message) -> Message:
 		# TODO: the checks should be on the database, not here
 		# security check first of all :D, just trying to control the flow
+		if message.status == 403:
+			return message
+
 		num_docs = self.mongo.lookgroups.count_documents({"chatId": message.chat.id})
 		if num_docs > 1:
 			raise Exception("Detected two copies of the same chat in the database")
 
-		chat_members = self.mongo.lookgroups.find_one({"chatId": message.chat.id})['senderIds']
+		query = self.mongo.lookgroups.find_one({"chatId": message.chat.id})
+		print(f"got this response {query}, {type(query)}")
+		chat_members = query['senderIds']
 
 		answer = ""
 		for senderId in chat_members:

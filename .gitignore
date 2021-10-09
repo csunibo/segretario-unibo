@@ -13,3 +13,7 @@ keys.env
 
 # virtual environment
 segretario/
+.vscode
+
+#docker
+docker-compose.yml
