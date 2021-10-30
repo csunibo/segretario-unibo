@@ -159,7 +159,13 @@ const dailyLectures = (dayToCheck, lectures) => {
 const createReplyMessage = (lectures) => {
     let text = '';
     for (let i = 0; i < lectures.length; ++i) {
-        text += '🕘 <b>' + lectures[i].title + '</b> ' + lectures[i].time + '\n';
+        // I'm getting the first word of the lecture title
+        text += '🕘 <b>' + lectures[i].title.split(" ")[0] + '</b> ' + lectures[i].time + '\n';
+        if (lectures[i].aule[0]) {
+            text += `🏛️<b>Aula:</b>  ${lectures[i].aule[0].des_edificio} \n`;
+        } else {
+            text += `🏛️<b>Aula:</b> Non lo so \n`;
+        }
     }
 	if (lectures.length === 0) {
 		text += "Non ci sono lezioni per questo giorno \n"

@@ -5,7 +5,7 @@ const bot = new TelegramBot(process.env.API_KEY, {polling: true});
 
 // TODO: sarebbe bello avere una classe bot che eredity la classe telegrambot.
 // Issue: this functions should just get msg.chat.id, not the whole object.
-const message = (msg, text) => {
+const message = async (msg, text) => {
     // TODO: write asserts to check or fail if msg, text or settings are undefined
     // this is valid for everyfuncion
 	return bot.sendMessage(msg.chat.id, text, settings.messageOptions)
@@ -19,7 +19,7 @@ const start = (startingFunction) => {
     bot.on('message', startingFunction);
 }
 
-const getChatMember = (chatId, userId) => {
+const getChatMember = async (chatId, userId) => {
     // What if this function fails to get the user? Should make a catch
     // but i don't know what to return then, or i don't know what
     // bot.getChatMember returns...
