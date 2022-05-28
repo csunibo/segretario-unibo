@@ -9,16 +9,23 @@ const { Bot, message} = require("@lib/bot.js");
 function course(msg, courseObject) {
     // TODO, assert that the object is well formed, check that virtuale, teams, website are strings
     // and professors is a list
-	const emails = courseObject.professors.join('@unibo.it\n  ') + '@unibo.it';
-	message(msg, `<b>${courseObject.name}</b>
-	<a href='https://virtuale.unibo.it/course/view.php?id=${courseObject.virtuale}'>Virtuale</a>
-	<a href='https://teams.microsoft.com/l/meetup-join/19%3ameeting_${courseObject.teams}%40thread.v2/0?context=%7b%22Tid%22%3a%22e99647dc-1b08-454a-bf8c-699181b389ab%22%2c%22Oid%22%3a%22080683d2-51aa-4842-aa73-291a43203f71%22%7d'>Videolezione</a>
-	<a href='https://www.unibo.it/it/didattica/insegnamenti/insegnamento/${courseObject.website}'>Sito</a>
-	<a href='https://www.unibo.it/it/didattica/insegnamenti/insegnamento/${courseObject.website}/orariolezioni'>Orario</a>
-	${emails}
-	📚<a href='https://https://csunibo.github.io/${courseObject.gitwebsite}'>Risorse: materiali, libri, prove</a>
-	📂<a href='https://https://csunibo.github.io/${courseObject.gitrepo}'>Repository github</a>
-    `);
+    // create message strings!
+	const emails = courseObject.professors.join('@unibo.it\n') + '@unibo.it';
+    let message_string = [ `<b>${courseObject.name}</b>`, 
+        `<a href='https://virtuale.unibo.it/course/view.php?id=${courseObject.virtuale}'>Virtuale</a>`,
+        `<a href='https://teams.microsoft.com/l/meetup-join/19%3ameeting_${courseObject.teams}%40thread.v2/0?context=%7b%22Tid%22%3a%22e99647dc-1b08-454a-bf8c-699181b389ab%22%2c%22Oid%22%3a%22080683d2-51aa-4842-aa73-291a43203f71%22%7d'>Videolezione</a>`,
+        `<a href='https://www.unibo.it/it/didattica/insegnamenti/insegnamento/${courseObject.website}'>Sito</a>`,
+        `<a href='https://www.unibo.it/it/didattica/insegnamenti/insegnamento/${courseObject.website}/orariolezioni'>Orario</a>`,
+        emails
+    ];
+
+    // for historical reasons, these fields are optional :D
+    if (courseObject.gitrepo != undefined) {
+        message_string.push(`📚<a href='https://csunibo.github.io/${courseObject.gitrepo}'>Risorse: materiali, libri, prove</a>`);
+        message_string.push(`📂<a href='https://github.com/csunibo/${courseObject.gitrepo}'>Repository github</a>`);
+    }
+
+	message(msg, message_string.join("\n"));
 }
 
 
