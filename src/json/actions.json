@@ -109,8 +109,20 @@
             "url": "https://corsi.unibo.it/laurea/informatica/orario-lezioni/@@orario_reale_json?anno=1"
     },
     "proxsettimana": {
-          "type": "nextWeek",
-          "description": "Conosci tutte le lezioni della prossima settimana",
-          "url": "https://corsi.unibo.it/laurea/informatica/orario-lezioni/@@orario_reale_json?anno=1"
+        "type": "nextWeek",
+        "description": "Conosci tutte le lezioni della prossima settimana",
+        "url": "https://corsi.unibo.it/laurea/informatica/orario-lezioni/@@orario_reale_json?anno=1"
+    },
+    "gruppiprimo": {
+        "type": "gruppiprimo",
+        "description": "Conosci i link per i singoli gruppi di insegnamento",
+        "gruppi": {
+            "Analisi Matematica": "https://t.me/joinchat/60_5FO9onfo4YmJk",
+            "Programmazione": "https://t.me/joinchat/z1kz0BRjFr8zYjI0",
+            "Architettura degli elaboratori": "https://t.me/joinchat/kXM-_CadypQwOGVk",
+            "Algebra e geometria": "https://t.me/joinchat/m5fn6ZffZvk0NGZk",
+            "Logica per l'informatica": "https://t.me/joinchat/HEBiPjOx_SpmYzY0",
+            "Algoritmi e strutture di dati": "https://t.me/joinchat/wSafC8l9ul1iNTE8"
+        }
     }
   }

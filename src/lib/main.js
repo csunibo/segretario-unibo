@@ -1,5 +1,4 @@
 const actions = require('@json/actions.json');
-const memes = require('@json/memes.json');
 
 const { lectures, weekLectures } = require("@lib/lecture.js");
 const { Bot, message} = require("@lib/bot.js");
@@ -55,6 +54,14 @@ const giveHelp = (msg) => {
 	message(msg, answer);
 }
 
+const getGruppiTelegram = (msg, gruppi) => {
+    let message_string = "<b>Gruppi di corso per l'anno richiesto: </b>\n";
+    Object.entries(gruppi).forEach(([nomeCorso, link]) => {
+        message_string += `<a href='${link}'>${nomeCorso}</a>\n`;
+    });
+    message(msg, message_string)
+}
+
 // Available actions
 const act = (msg, action) => {
 	switch (action.type) {
@@ -79,6 +86,9 @@ const act = (msg, action) => {
 		case 'help':
 			giveHelp(msg);
 			break;
+        case 'gruppiprimo':
+            getGruppiTelegram(msg, action.gruppi);
+            break;
 		default:
 			console.error(`Unknown action type "${action.type}"`);
 	}
@@ -97,8 +107,6 @@ const onMessage = (msg) => {
 	}
 	if (command in actions) {
 		act(msg, actions[command]);
-	} else if (command in memes) {
-		message(msg, memes[command]);
 	}
 }
 
