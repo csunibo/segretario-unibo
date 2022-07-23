@@ -118,6 +118,7 @@ function main() {
 	process.env.NTBA_FIX_319 = 1;
 
 	Bot.start(onMessage);
+    console.log("bot started");
 }
 
 module.exports = {

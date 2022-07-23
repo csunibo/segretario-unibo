@@ -4,8 +4,6 @@
   "description": "A Telegram bot to assist other undergraduate Computer Science students at the University of Bologna.",
   "scripts": {
     "start": "node ./src/index.js",
-    "daily": "node ./src/daily.js",
-    "maintenance": "node ./src/maintenance.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
